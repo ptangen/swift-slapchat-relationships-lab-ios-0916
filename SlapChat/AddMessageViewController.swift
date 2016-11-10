@@ -12,6 +12,7 @@ import CoreData
 class AddMessageViewController: UIViewController {
 
     @IBOutlet weak var addMessageTextField: UITextField!
+    var recipient1: Recipient!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,10 +22,13 @@ class AddMessageViewController: UIViewController {
     @IBAction func saveMessageButtonTapped(_ sender: AnyObject) {
         let store = DataStore.sharedInstance
         let context = store.persistentContainer.viewContext
-        let newMessage = NSEntityDescription.insertNewObject(forEntityName: "Message", into: context) as! Message
-        newMessage.content = addMessageTextField.text
-        newMessage.createdAt = NSDate()
+        let messageInst = Message(context: context)
+        
+        messageInst.content = addMessageTextField.text
+        messageInst.createdAt = NSDate()
+        self.recipient1.addToMessages(messageInst)
         store.saveContext()
+        
         dismiss(animated: true, completion: nil)
     }
     

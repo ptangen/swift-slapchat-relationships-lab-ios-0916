@@ -11,6 +11,7 @@ import CoreData
 
 class DataStore {
     
+    var recipients:[Recipient] = []
     var messages:[Message] = []
     
     static let sharedInstance = DataStore()
@@ -66,21 +67,16 @@ class DataStore {
     
     func fetchData() {
         let context = persistentContainer.viewContext
-        let messagesRequest: NSFetchRequest<Message> = Message.fetchRequest()
+        let recipientRequest: NSFetchRequest<Recipient> = Recipient.fetchRequest()
         
         do {
-            messages = try context.fetch(messagesRequest)
-            messages.sort(by: { (message1, message2) -> Bool in
-                let date1 = message1.createdAt! as Date
-                let date2 = message2.createdAt! as Date
-                return date1 < date2
-            })
+            self.recipients = try context.fetch(recipientRequest)
         } catch let error {
             print("Error fetching data: \(error)")
-            messages = []
+            recipients = []
         }
         
-        if messages.count == 0 {
+        if recipients.count == 0 {
             generateTestData()
         }
     }
@@ -89,22 +85,38 @@ class DataStore {
     
     func generateTestData() {
         let context = persistentContainer.viewContext
-        
+      
+        // define recipients
+        let recipientOne: Recipient = NSEntityDescription.insertNewObject(forEntityName: "Recipient", into: context) as! Recipient
+        recipientOne.email = "recipient1@company.com"
+        recipientOne.name = "Bob"
+        recipientOne.phoneNumber = "111-111-1111"
+        recipientOne.twitterHandle = "recipient1"
+
+        // define recipients
+        let recipientTwo: Recipient = NSEntityDescription.insertNewObject(forEntityName: "Recipient", into: context) as! Recipient
+        recipientTwo.email = "recipient2@company.com"
+        recipientTwo.name = "Bill"
+        recipientTwo.phoneNumber = "222-222-2222"
+        recipientTwo.twitterHandle = "recipient2"
+      
+        // define messages
         let messageOne: Message = NSEntityDescription.insertNewObject(forEntityName: "Message", into: context) as! Message
-        
         messageOne.content = "Message 1"
         messageOne.createdAt = NSDate()
-        
+        recipientOne.addToMessages(messageOne)
+      
+      
         let messageTwo: Message = NSEntityDescription.insertNewObject(forEntityName: "Message", into: context) as! Message
-        
         messageTwo.content = "Message 2"
         messageTwo.createdAt = NSDate()
-        
+        recipientOne.addToMessages(messageTwo)
+      
         let messageThree: Message = NSEntityDescription.insertNewObject(forEntityName: "Message", into: context) as! Message
-        
         messageThree.content = "Message 3"
         messageThree.createdAt = NSDate()
-        
+        recipientTwo.addToMessages(messageThree)
+
         saveContext()
         fetchData()
     }
